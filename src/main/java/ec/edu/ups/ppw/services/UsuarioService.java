@@ -6,7 +6,14 @@ import java.util.List;
 import ec.edu.ups.ppw.business.GestionUsuario;
 import ec.edu.ups.ppw.model.Usuario;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -18,97 +25,131 @@ public class UsuarioService {
     @Inject
     private GestionUsuario gu;
 
-    // LEER TODOS
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getListaUsuarios() {
-        List<Usuario> list = gu.getUsuarios();
-        return Response.ok(list).build();
+        List<Usuario> listado = gu.getUsuarios();
+        return Response.ok(listado).build();
     }
 
-    // LEER UNO
     @GET
-    @Path("{id}")
+    @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUsuario(@PathParam("id") String cedula) {
+    public Response getUsuario(@PathParam("id") int id) {
+        Usuario u;
         try {
-            Usuario usu = gu.getUsuarioPorId(cedula);
-            
-            if (usu != null) {
-                return Response.ok(usu).build();
-            } else {
-                Error error = new Error(404, "No encontrado", "Usuario con ID " + cedula + " no encontrado");
-                return Response.status(Response.Status.NOT_FOUND).entity(error).build();
-            }
+            u = gu.getUsuarioPorId(id);
         } catch (Exception e) {
-            e.printStackTrace();
-            Error error = new Error(500, "Error Interno", e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(error).build();
+            Error error = new Error(
+                    500,
+                    "Error interno del servidor",
+                    "Se produjo un error al procesar la solicitud: " + e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(error)
+                    .build();
         }
+
+        if (u == null) {
+            Error error = new Error(
+                    404,
+                    "No encontrado",
+                    "Usuario con id " + id + " no encontrado");
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(error)
+                    .build();
+        }
+
+        return Response.ok(u).build();
     }
 
-    // CREAR (Con Location Header)
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response crearUsuario(Usuario usuario, @Context UriInfo uriInfo) {
+    public Response createUsuario(Usuario usuario, @Context UriInfo uriInfo) {
         try {
             gu.createUsuario(usuario);
-            
-            
-            URI location = uriInfo.getAbsolutePathBuilder().path(usuario.getCedula()).build();
-            
-            return Response.created(location).entity(usuario).build();
-            
         } catch (Exception e) {
-            e.printStackTrace();
-            Error error = new Error(500, "Error Interno", e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(error).build();
+            Error error = new Error(
+                    500,
+                    "Error interno del servidor",
+                    e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(error)
+                    .build();
         }
+
+        URI location = uriInfo.getAbsolutePathBuilder()
+                .path(String.valueOf(usuario.getId()))
+                .build();
+
+        return Response.created(location)
+                .entity(usuario)
+                .build();
     }
 
-    // ACTUALIZAR
     @PUT
-    @Path("update/{id}")
+    @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response actualizarUsuario(@PathParam("id") String id, Usuario usuario) {
-        try {
-            // Seguridad: ID URL vs ID Body
-            if (!id.equals(usuario.getCedula())) {
-                Error error = new Error(400, "Bad Request", "El ID de la URL no coincide con la cédula del cuerpo");
-                return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
-            }
+    public Response updateUsuario(@PathParam("id") int id, Usuario usuario) {
+        Usuario existente = gu.getUsuarioPorId(id);
 
-            gu.updateUsuario(usuario);
-            return Response.ok(usuario).build();
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            Error error = new Error(500, "Error Interno", e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(error).build();
+        if (existente == null) {
+            Error error = new Error(
+                    404,
+                    "No encontrado",
+                    "Usuario con id " + id + " no encontrado");
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(error)
+                    .build();
         }
+
+        try {
+            existente.setNombre(usuario.getNombre());
+            existente.setEmail(usuario.getEmail());
+            existente.setPassword(usuario.getPassword());
+            gu.updateUsuario(existente);
+        } catch (Exception e) {
+            Error error = new Error(
+                    500,
+                    "Error interno del servidor",
+                    e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(error)
+                    .build();
+        }
+
+        return Response.ok(existente).build();
     }
 
-    
     @DELETE
-    @Path("{id}")
+    @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response borrarUsuario(@PathParam("id") String id) {
-        try {
-            // Validar primero para dar un buen 404 si no existe
-            Usuario existente = gu.getUsuarioPorId(id);
-            if (existente == null) {
-                Error error = new Error(404, "No encontrado", "No se puede eliminar, el usuario no existe");
-                return Response.status(Response.Status.NOT_FOUND).entity(error).build();
-            }
-            
-            gu.deleteUsuario(id);
-            return Response.noContent().build(); // 204 No Content  para delete exitoso
-        } catch (Exception e) {
-            e.printStackTrace();
-            Error error = new Error(500, "Error Interno", e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(error).build();
+    public Response deleteUsuario(@PathParam("id") int id) {
+        Usuario existente = gu.getUsuarioPorId(id);
+
+        if (existente == null) {
+            Error error = new Error(
+                    404,
+                    "No encontrado",
+                    "Usuario con id " + id + " no encontrado");
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(error)
+                    .build();
         }
+
+        try {
+            gu.deleteUsuario(id);
+        } catch (Exception e) {
+            Error error = new Error(
+                    500,
+                    "Error interno del servidor",
+                    e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(error)
+                    .build();
+        }
+
+        return Response.ok().build();
     }
 }

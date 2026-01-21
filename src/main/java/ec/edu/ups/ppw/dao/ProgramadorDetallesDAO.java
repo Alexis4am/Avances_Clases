@@ -21,11 +21,11 @@ public class ProgramadorDetallesDAO {
         em.merge(detalles);
     }
 
-    public ProgramadorDetalles read(String id) {
+    public ProgramadorDetalles read(int id) {
         return em.find(ProgramadorDetalles.class, id);
     }
 
-    public void delete(String id) {
+    public void delete(int id) {
         ProgramadorDetalles detalles = em.find(ProgramadorDetalles.class, id);
         if (detalles != null) {
             em.remove(detalles);

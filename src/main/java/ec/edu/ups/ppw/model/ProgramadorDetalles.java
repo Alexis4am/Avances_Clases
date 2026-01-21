@@ -8,10 +8,10 @@ public class ProgramadorDetalles {
 
     @Id
     @Column(name = "det_programador_id")
-    private String id;
+    private int id;
 
     @OneToOne
-    @MapsId // MISMA ID que Usuario (Clave Primaria Compartida)
+    @MapsId // Esto hace que comparta la MISMA ID que Usuario (Clave Primaria Compartida)
     @JoinColumn(name = "det_programador_id")
     @JsonbTransient
     private Usuario usuario;
@@ -22,28 +22,18 @@ public class ProgramadorDetalles {
     @Column(name = "det_biografia_breve", columnDefinition = "TEXT")
     private String biografia;
     
-    //FALTA: telefono
-    //FALTA: linkedin
     @Column(name = "det_link_github", length = 512)
     private String githubLink;
-    //FALTA:foto de perfil
-    //FALTA:activo
-    
+
     public ProgramadorDetalles() {}
 
-	
-
-	public String getId() {
+	public int getId() {
 		return id;
 	}
 
-
-
-	public void setId(String id) {
+	public void setId(int id) {
 		this.id = id;
 	}
-
-
 
 	public Usuario getUsuario() {
 		return usuario;

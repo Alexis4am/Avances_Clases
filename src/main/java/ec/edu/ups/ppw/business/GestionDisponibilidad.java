@@ -12,7 +12,23 @@ public class GestionDisponibilidad {
     @Inject
     private DisponibilidadDAO daoDisponibilidad;
 
-    public List<Disponibilidad> getDisponibilidad() {
+    public void createDisponibilidad(Disponibilidad disponibilidad) {
+        daoDisponibilidad.insert(disponibilidad);
+    }
+
+    public List<Disponibilidad> getDisponibilidades() {
         return daoDisponibilidad.getAll();
+    }
+
+    public Disponibilidad getDisponibilidadPorId(int id) {
+        return daoDisponibilidad.read(id);
+    }
+
+    public void updateDisponibilidad(Disponibilidad disponibilidad) {
+        daoDisponibilidad.update(disponibilidad);
+    }
+
+    public void deleteDisponibilidad(int id) {
+        daoDisponibilidad.delete(id);
     }
 }

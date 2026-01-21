@@ -12,44 +12,28 @@ public class GestionProgramadorDetalles {
     @Inject
     private ProgramadorDetallesDAO daoProgramadorDetalles;
 
+    // CREATE
+    public void createProgramadorDetalles(ProgramadorDetalles programadorDetalles) {
+        daoProgramadorDetalles.insert(programadorDetalles);
+    }
+
+    // READ (Todos)
     public List<ProgramadorDetalles> getProgramadorDetalles() {
         return daoProgramadorDetalles.getAll();
     }
 
-    //  por ID
-    public ProgramadorDetalles getPorId(String id) throws Exception {
-        if (id == null || id.length() != 10) {
-            throw new Exception("ID incorrecto (Se requiere cédula de 10 dígitos).");
-        }
-        return daoProgramadorDetalles.read(id); 
+    // READ (Uno)
+    public ProgramadorDetalles getProgramadorDetallesPorId(int id) {
+        return daoProgramadorDetalles.read(id);
     }
 
-    public void createProgramadorDetalles(ProgramadorDetalles pd) throws Exception {
-
-        
-        daoProgramadorDetalles.insert(pd);
+    // UPDATE
+    public void updateProgramadorDetalles(ProgramadorDetalles programadorDetalles) {
+        daoProgramadorDetalles.update(programadorDetalles);
     }
 
-    public void updateProgramadorDetalles(ProgramadorDetalles pd) throws Exception {
-  
-        String idToCheck = String.valueOf(pd.getId()); 
-        
-        if (idToCheck == null || idToCheck.isEmpty()) {
-            throw new Exception("Se requiere un ID para actualizar.");
-        }
-        
-       
-        if (daoProgramadorDetalles.read(idToCheck) == null) {
-            throw new Exception("El detalle del programador con ID " + idToCheck + " no existe.");
-        }
-
-        daoProgramadorDetalles.update(pd);
-    }
-
-    public void deleteProgramadorDetalles(String id) throws Exception {
-        if (id == null || id.length() != 10) {
-            throw new Exception("ID inválido.");
-        }
+    // DELETE
+    public void deleteProgramadorDetalles(int id) {
         daoProgramadorDetalles.delete(id);
     }
 }

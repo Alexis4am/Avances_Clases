@@ -43,7 +43,6 @@ public class Demo {
         //-------------------------------------
         //DEV
         Usuario programador = new Usuario();
-        programador.setCedula("1234567891");
         programador.setNombre("Alex");
         programador.setApellido("Velasco");
         programador.setEmail("alex.dev@mail.com");
@@ -52,7 +51,6 @@ public class Demo {
         daoUsuario.insert(programador);
         //USER
         Usuario cliente = new Usuario();
-        cliente.setCedula("1401041544");
         cliente.setNombre("Maria");
         cliente.setApellido("Ortega");
         cliente.setEmail("maria@cliente.com");
