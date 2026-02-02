@@ -18,6 +18,7 @@ public class ProgramadorDetalles implements Serializable {
     @JoinColumn(name = "det_programador_id")
     @JsonbTransient
     private Usuario usuario;
+    
     @Column(name = "det_nombre_completo", length = 100)
     private String nombreCompleto;
 
